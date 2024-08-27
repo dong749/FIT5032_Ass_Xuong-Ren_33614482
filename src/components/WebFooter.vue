@@ -1,3 +1,4 @@
+<!-- https://getbootstrap.com/docs/5.3/examples/footers/# -->
 <template>
   <div class="container">
     <footer class="py-3 my-4">
