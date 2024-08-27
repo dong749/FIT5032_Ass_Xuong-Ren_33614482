@@ -1,16 +1,33 @@
 <template>
   <div class="container mt-5 d-flex flex-column justify-content-center align-items-center">
     <h1 class="text-center mb-4">Login</h1>
-    <form class="w-100" style="max-width: 400px">
+    <form class="w-100" style="max-width: 400px" @submit.prevent="finishLogin">
       <div class="mb-3">
         <label class="form-label">Username</label>
-        <input type="text" class="form-control" />
+        <input type="text" class="form-control" v-model="formData.username" />
       </div>
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input type="password" class="form-control" />
+        <input type="password" class="form-control" v-model="formData.password" />
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
+      <br />
+      <br />
+      <p class="text-center mb-4 text-primary login-btn" @click="loginWithGoogleAccount">
+        Login with google account
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-google"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"
+          />
+        </svg>
+      </p>
     </form>
     <br />
     <div>
@@ -25,6 +42,72 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth'
+import { useRouter } from 'vue-router'
 
-<style scoped></style>
+const router = useRouter()
+
+const formData = ref({
+  username: '',
+  password: ''
+})
+
+const error = ref({
+  username: null,
+  password: null
+})
+
+// https://firebase.google.com/docs/auth/web/password-auth
+const finishLogin = () => {
+  const auth = getAuth()
+  signInWithEmailAndPassword(auth, formData.value.username, formData.value.password)
+    .then((userCredential) => {
+      // Signed in
+      console.log(formData.value)
+      const user = userCredential.user
+      console.log('Login successfully')
+      router.push('/')
+    })
+    .catch((error) => {
+      const errorCode = error.code
+      const errorMessage = error.message
+      console.log(errorCode, errorMessage)
+    })
+}
+
+// https://firebase.google.com/docs/auth/web/google-signin
+const loginWithGoogleAccount = () => {
+  signInWithPopup(getAuth(), new GoogleAuthProvider())
+    .then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result)
+      const token = credential.accessToken
+      // The signed-in user info.
+      const user = result.user
+      // IdP data available using getAdditionalUserInfo(result)
+      console.log('Sign in with google account')
+      router.push('/')
+    })
+    .catch((error) => {
+      const errorCode = error.code
+      const errorMessage = error.message
+      const email = error.customData.email
+      const credential = GoogleAuthProvider.credentialFromError(error)
+      console.log(errorCode, errorMessage, email, credential)
+    })
+}
+</script>
+
+<style scoped>
+.login-btn {
+  cursor: pointer;
+  transition: color 0.3s;
+}
+</style>

@@ -178,7 +178,7 @@
 
 <style scoped>
 .carousel-item {
-  height: 900px;
+  height: 800px;
 }
 
 .carousel-item img {
