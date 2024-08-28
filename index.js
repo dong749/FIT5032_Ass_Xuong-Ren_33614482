@@ -1,4 +1,5 @@
 import LoginView from '@/components/authentication/LoginView.vue'
+import PasswordResetView from '@/components/authentication/PasswordResetView.vue'
 import RegisterView from '@/components/authentication/RegisterView.vue'
 import HomePageView from '@/components/HomePageView.vue'
 import AboutPage from '@/components/views/AboutPage.vue'
@@ -48,6 +49,11 @@ const routes = [
     path: '/authentication/registor',
     name: 'Registor',
     component: RegisterView
+  },
+  {
+    path: '/authentication/reset',
+    name: 'Reset',
+    component: PasswordResetView
   }
 ]
 

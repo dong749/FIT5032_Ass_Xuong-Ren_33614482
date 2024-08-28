@@ -91,6 +91,33 @@
   </nav> -->
 </template>
 
-<script setup></script>
+<script setup>
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
+
+var isLogin = false
+
+// https://firebase.google.com/docs/reference/js/auth.user
+onAuthStateChanged(getAuth(), (user) => {
+  if (user) {
+    // User is signed in, see docs for a list of available properties
+    // ...
+    isLogin = true
+  } else {
+    console.log('user has been logged out')
+  }
+})
+
+const finishSignOut = () => {
+  if (isLogin) {
+    signOut(getAuth())
+      .then(() => {
+        // Sign-out successful.
+      })
+      .catch((error) => {
+        console.log(error.message)
+      })
+  }
+}
+</script>
 
 <style scoped></style>

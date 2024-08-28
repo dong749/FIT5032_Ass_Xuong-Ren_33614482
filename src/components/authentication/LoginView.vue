@@ -10,7 +10,7 @@
           id="username"
           name="username"
           @blur="validateUsername(true)"
-          @input="validatePassword(false)"
+          @input="validateUsername(false)"
           v-model="formData.username"
         />
         <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
@@ -56,6 +56,9 @@
         >
         to sign up
       </p>
+      <router-link class="nav-link text-primary text-center" to="/authentication/reset"
+        >Password reset</router-link
+      >
     </div>
   </div>
 </template>
