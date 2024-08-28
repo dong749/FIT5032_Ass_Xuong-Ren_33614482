@@ -37,8 +37,11 @@
           class="form-control"
           id="confirmPassword"
           name="confirmPassword"
+          @blur="validateConfirmPassword(true)"
+          @input="validateConfirmPassword(false)"
           v-model="formData.confirmPassword"
         />
+        <div v-if="errors.confirmPassword" class="text-danger">{{ errors.confirmPassword }}</div>
       </div>
       <!-- <button type="submit" class="btn btn-primary w-100">Registor</button> -->
       <!-- <router-link type="submit" class="btn btn-lg btn-primary w-100" to="/authentication/login"
@@ -52,6 +55,9 @@
 <script setup>
 import { ref } from 'vue'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const formData = ref({
   username: '',
@@ -66,12 +72,17 @@ const errors = ref({
 })
 
 const validateUsername = (blur) => {
+  const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/
   if (formData.value.username.length < 3) {
     if (blur) {
       errors.value.username = 'username must be more than 3 characters.'
-    } else {
-      errors.value.username = null
     }
+  } else if (!gmailRegex.test(formData.value.username)) {
+    if (blur) {
+      errors.value.username = 'Gmail format is invalid'
+    }
+  } else {
+    errors.value.username = null
   }
 }
 
@@ -97,19 +108,42 @@ const validatePassword = (blur) => {
   }
 }
 
+const validateConfirmPassword = (blur) => {
+  const password = formData.value.password
+  const confirmPassword = formData.value.confirmPassword
+  if (confirmPassword.length == 0) {
+    if (blur) {
+      errors.value.confirmPassword = 'Confirmed password can not be empty'
+    }
+  } else if (password != confirmPassword) {
+    if (blur) {
+      errors.value.confirmPassword = 'Confirmed password do not match with password'
+    }
+  } else {
+    errors.value.confirmPassword = null
+  }
+}
+
 // https://firebase.google.com/docs/auth/web/password-auth
 const finishRegister = () => {
   console.log(formData.value)
-  createUserWithEmailAndPassword(getAuth(), formData.value.username, formData.value.password)
-    .then((userCredential) => {
-      console.log('Register successfully')
-      console.log(userCredential)
-    })
-    .catch((error) => {
-      const errorCode = error.code
-      const errorMessage = error.message
-      console.log(errorCode, errorMessage)
-    })
+  validateUsername(true)
+  validatePassword(true)
+  validateConfirmPassword(true)
+  if (!errors.value.username && !errors.value.password && !errors.value.confirmPassword) {
+    createUserWithEmailAndPassword(getAuth(), formData.value.username, formData.value.password)
+      .then((userCredential) => {
+        console.log('Register successfully')
+        console.log(userCredential)
+        router.push('/')
+      })
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        console.log(errorCode, errorMessage)
+        alert(errorMessage)
+      })
+  }
 }
 </script>
 

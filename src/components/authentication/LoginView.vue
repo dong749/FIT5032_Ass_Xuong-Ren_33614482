@@ -3,12 +3,30 @@
     <h1 class="text-center mb-4">Login</h1>
     <form class="w-100" style="max-width: 400px" @submit.prevent="finishLogin">
       <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" class="form-control" v-model="formData.username" />
+        <label for="username" class="form-label">Username</label>
+        <input
+          type="text"
+          class="form-control"
+          id="username"
+          name="username"
+          @blur="validateUsername(true)"
+          @input="validatePassword(false)"
+          v-model="formData.username"
+        />
+        <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" class="form-control" v-model="formData.password" />
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          name="password"
+          @blur="validatePassword(true)"
+          @input="validatePassword(false)"
+          v-model="formData.password"
+        />
+        <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
       <br />
@@ -59,27 +77,69 @@ const formData = ref({
   password: ''
 })
 
-const error = ref({
+const errors = ref({
   username: null,
   password: null
 })
 
+const validateUsername = (blur) => {
+  const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/
+  if (formData.value.username.length < 3) {
+    if (blur) {
+      errors.value.username = 'username must be more than 3 characters.'
+    }
+  } else if (!gmailRegex.test(formData.value.username)) {
+    if (blur) {
+      errors.value.username = 'Gmail format is invalid'
+    }
+  } else {
+    errors.value.username = null
+  }
+}
+
+const validatePassword = (blur) => {
+  const password = formData.value.password
+  const minLength = 8
+  const hasUpperCase = /[A-Z]/.test(password)
+  const hasLowerCase = /[a-z]/.test(password)
+  if (password.length < minLength) {
+    if (blur) {
+      errors.value.password = 'Password must be 8 characters'
+    }
+  } else if (!hasUpperCase) {
+    if (blur) {
+      errors.value.password = 'Password must be include uppercase letters'
+    }
+  } else if (!hasLowerCase) {
+    if (blur) {
+      errors.value.password = 'Password must be include lowercase letters'
+    }
+  } else {
+    errors.value.password = null
+  }
+}
+
 // https://firebase.google.com/docs/auth/web/password-auth
 const finishLogin = () => {
   const auth = getAuth()
-  signInWithEmailAndPassword(auth, formData.value.username, formData.value.password)
-    .then((userCredential) => {
-      // Signed in
-      console.log(formData.value)
-      const user = userCredential.user
-      console.log('Login successfully')
-      router.push('/')
-    })
-    .catch((error) => {
-      const errorCode = error.code
-      const errorMessage = error.message
-      console.log(errorCode, errorMessage)
-    })
+  validateUsername(true)
+  validatePassword(true)
+  if (!errors.value.username && !errors.value.password) {
+    signInWithEmailAndPassword(auth, formData.value.username, formData.value.password)
+      .then((userCredential) => {
+        // Signed in
+        console.log(formData.value)
+        const user = userCredential.user
+        console.log('Login successfully')
+        router.push('/')
+      })
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        console.log(errorCode, errorMessage)
+        alert('Invalid username or password')
+      })
+  }
 }
 
 // https://firebase.google.com/docs/auth/web/google-signin
