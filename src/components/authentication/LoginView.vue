@@ -72,6 +72,8 @@ import {
   signInWithPopup
 } from 'firebase/auth'
 import { useRouter } from 'vue-router'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { db } from '@/FirbaseConfig'
 
 const router = useRouter()
 
@@ -147,24 +149,36 @@ const finishLogin = () => {
 }
 
 // https://firebase.google.com/docs/auth/web/google-signin
+// Part of code from Genrative AI https://chatgpt.com/share/cb4da5aa-e52f-409f-a554-233cd57adbaf
 const loginWithGoogleAccount = () => {
   signInWithPopup(getAuth(), new GoogleAuthProvider())
     .then((result) => {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      const credential = GoogleAuthProvider.credentialFromResult(result)
-      const token = credential.accessToken
-      // The signed-in user info.
       const user = result.user
-      // IdP data available using getAdditionalUserInfo(result)
-      console.log('Sign in with google account')
+      const userDocRef = doc(db, 'users', user.uid)
+      return getDoc(userDocRef).then((userDoc) => {
+        if (!userDoc.exists()) {
+          return setDoc(userDocRef, {
+            uid: user.uid,
+            username: user.email,
+            registeredAt: new Date()
+          }).then(() => {
+            console.log('User document created')
+          })
+        } else {
+          console.log('User document already exists')
+        }
+      })
+    })
+    .then(() => {
       router.push('/')
     })
     .catch((error) => {
       const errorCode = error.code
       const errorMessage = error.message
-      const email = error.customData.email
+      const email = error.customData?.email
       const credential = GoogleAuthProvider.credentialFromError(error)
-      console.log(errorCode, errorMessage, email, credential)
+      console.error('Error signing in with Google:', errorCode, errorMessage, email, credential)
+      alert(`Error: ${errorMessage}`)
     })
 }
 </script>

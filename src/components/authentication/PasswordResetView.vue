@@ -60,6 +60,7 @@ const sendEmailtoResetPassword = () => {
         // ..
         console.log('Password reset email sent!')
         alert('Password reset email sent!')
+
         router.push('/authentication/login')
       })
       .catch((error) => {

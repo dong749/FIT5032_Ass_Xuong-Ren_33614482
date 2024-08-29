@@ -1,12 +1,5 @@
-// import './assets/main.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap'
-
-import { initializeApp } from 'firebase/app'
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from '..'
 import { getFirestore } from 'firebase/firestore'
+import { initializeApp } from 'firebase/app'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBBZ-4encZKCgCOwpg7nwtHRIhAtjNYdd8',
@@ -20,8 +13,5 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig)
 const db = getFirestore(firebaseApp)
-const app = createApp(App)
 
-app.use(router)
-
-app.mount('#app')
+export { db }

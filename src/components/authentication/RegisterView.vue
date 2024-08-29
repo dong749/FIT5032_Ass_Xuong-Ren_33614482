@@ -50,6 +50,7 @@
             class="form-check-input"
             id="isPatient"
             v-model="formData.isPatient"
+            @change="toggleVolunteer('patient')"
           />
           <label class="form-check-label" for="isPatient">Patient</label>
         </div>
@@ -59,6 +60,7 @@
             class="form-check-input"
             id="isVolunteer"
             v-model="formData.isVolunteer"
+            @change="toggleVolunteer('volunteer')"
           />
           <label class="form-check-label" for="isVolunteer">Volunteer</label>
         </div>
@@ -77,10 +79,10 @@
 import { ref } from 'vue'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { useRouter } from 'vue-router'
-import { getFirestore, collection, addDoc } from 'firebase/firestore'
+import { collection, addDoc } from 'firebase/firestore'
+import { db } from '@/FirbaseConfig'
 
 const router = useRouter()
-const db = getFirestore()
 
 const formData = ref({
   username: '',
@@ -168,15 +170,29 @@ const finishRegister = async () => {
       console.log(userCredential)
 
       const docRef = await addDoc(collection(db, 'users'), {
-        uid: userCredential.user.uid, // 保存用户 UID
+        uid: userCredential.user.uid,
         username: formData.value.username,
-        registeredAt: new Date() // 保存注册时间
+        isPatient: formData.value.isPatient,
+        isVolunteer: formData.value.isVolunteer,
+        registeredAt: new Date()
       })
       console.log('Document written with ID: ', docRef.id)
       router.push('/')
     } catch (error) {
       console.error('Error during registration: ', error.message)
       alert(error.message)
+    }
+  }
+}
+
+const toggleVolunteer = (role) => {
+  if (role === 'patient') {
+    if (formData.value.isPatient) {
+      formData.value.isVolunteer = false
+    }
+  } else if (role === 'volunteer') {
+    if (formData.value.isVolunteer) {
+      formData.value.isPatient = false
     }
   }
 }
