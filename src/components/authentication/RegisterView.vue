@@ -43,6 +43,27 @@
         />
         <div v-if="errors.confirmPassword" class="text-danger">{{ errors.confirmPassword }}</div>
       </div>
+      <div class="row mb-3">
+        <div class="col-md-6 col-sm-6">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="isPatient"
+            v-model="formData.isPatient"
+          />
+          <label class="form-check-label" for="isPatient">Patient</label>
+        </div>
+        <div class="col-md-6 col-sm-6">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="isVolunteer"
+            v-model="formData.isVolunteer"
+          />
+          <label class="form-check-label" for="isVolunteer">Volunteer</label>
+        </div>
+      </div>
+
       <!-- <button type="submit" class="btn btn-primary w-100">Registor</button> -->
       <!-- <router-link type="submit" class="btn btn-lg btn-primary w-100" to="/authentication/login"
         >Registor</router-link
@@ -56,12 +77,16 @@
 import { ref } from 'vue'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { useRouter } from 'vue-router'
+import { getFirestore, collection, addDoc } from 'firebase/firestore'
 
 const router = useRouter()
+const db = getFirestore()
 
 const formData = ref({
   username: '',
   password: '',
+  isPatient: false,
+  isVolunteer: false,
   confirmPassword: ''
 })
 
@@ -125,24 +150,34 @@ const validateConfirmPassword = (blur) => {
 }
 
 // https://firebase.google.com/docs/auth/web/password-auth
-const finishRegister = () => {
-  console.log(formData.value)
+// https://chatgpt.com/share/ee2808de-4395-4ae5-8a48-3118db885a9b
+const finishRegister = async () => {
   validateUsername(true)
   validatePassword(true)
   validateConfirmPassword(true)
+
   if (!errors.value.username && !errors.value.password && !errors.value.confirmPassword) {
-    createUserWithEmailAndPassword(getAuth(), formData.value.username, formData.value.password)
-      .then((userCredential) => {
-        console.log('Register successfully')
-        console.log(userCredential)
-        router.push('/')
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        getAuth(),
+        formData.value.username,
+        formData.value.password
+      )
+
+      console.log('Register successfully')
+      console.log(userCredential)
+
+      const docRef = await addDoc(collection(db, 'users'), {
+        uid: userCredential.user.uid, // 保存用户 UID
+        username: formData.value.username,
+        registeredAt: new Date() // 保存注册时间
       })
-      .catch((error) => {
-        const errorCode = error.code
-        const errorMessage = error.message
-        console.log(errorCode, errorMessage)
-        alert(errorMessage)
-      })
+      console.log('Document written with ID: ', docRef.id)
+      router.push('/')
+    } catch (error) {
+      console.error('Error during registration: ', error.message)
+      alert(error.message)
+    }
   }
 }
 </script>

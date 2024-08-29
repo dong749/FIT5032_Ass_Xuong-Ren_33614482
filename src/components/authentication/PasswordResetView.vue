@@ -49,6 +49,7 @@ const validateUsername = (blur) => {
   }
 }
 
+// https://firebase.google.com/docs/auth/web/manage-users?hl=zh-cn
 const sendEmailtoResetPassword = () => {
   const auth = getAuth()
   validateUsername(true)

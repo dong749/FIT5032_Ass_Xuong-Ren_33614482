@@ -134,6 +134,7 @@ const finishLogin = () => {
         console.log(formData.value)
         const user = userCredential.user
         console.log('Login successfully')
+
         router.push('/')
       })
       .catch((error) => {
