@@ -149,7 +149,6 @@ const finishLogin = () => {
 }
 
 // https://firebase.google.com/docs/auth/web/google-signin
-// Part of code from Genrative AI https://chatgpt.com/share/cb4da5aa-e52f-409f-a554-233cd57adbaf
 const loginWithGoogleAccount = () => {
   signInWithPopup(getAuth(), new GoogleAuthProvider())
     .then((result) => {

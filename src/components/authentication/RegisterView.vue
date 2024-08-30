@@ -152,7 +152,6 @@ const validateConfirmPassword = (blur) => {
 }
 
 // https://firebase.google.com/docs/auth/web/password-auth
-// https://chatgpt.com/share/ee2808de-4395-4ae5-8a48-3118db885a9b
 const finishRegister = async () => {
   validateUsername(true)
   validatePassword(true)
@@ -185,7 +184,6 @@ const finishRegister = async () => {
   }
 }
 
-// https://chatgpt.com/share/12abb89a-afcd-49e7-88cb-fec9623cf516
 const toggleVolunteer = (role) => {
   if (role === 'patient') {
     if (formData.value.isPatient) {
