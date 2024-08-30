@@ -67,17 +67,23 @@ const routes = [
   }
 ]
 
-const getCurrentUser = async () => {
+// https://firebase.google.com/docs/auth/web/manage-users?hl=zh-cn
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises
+const getCurrentUser = () => {
   const auth = getAuth()
   return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(
+    const stopObservation = onAuthStateChanged(
       auth,
       (user) => {
-        unsubscribe()
-        resolve(user)
+        stopObservation() // stop listen the changing of status
+        if (user) {
+          resolve(user)
+        } else {
+          resolve(null)
+        }
       },
       (error) => {
-        unsubscribe()
+        stopObservation()
         reject(error)
       }
     )

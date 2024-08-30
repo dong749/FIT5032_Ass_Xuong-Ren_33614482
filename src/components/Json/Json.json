@@ -2,21 +2,36 @@
   {
     "id": 1,
     "name": "Company A",
-    "website": "https://www.companya.com"
+    "website": "https://example.com/"
   },
   {
     "id": 2,
     "name": "Company B",
-    "website": "https://www.companyb.com"
+    "website": "https://example.com/"
   },
   {
     "id": 3,
     "name": "Company C",
-    "website": "https://www.companyc.com"
+    "website": "https://example.com/"
   },
   {
     "id": 4,
     "name": "Company D",
-    "website": "https://www.companyc.com"
+    "website": "https://example.com/"
+  },
+  {
+    "id": 5,
+    "name": "Company E",
+    "website": "https://example.com/"
+  },
+  {
+    "id": 6,
+    "name": "Company F",
+    "website": "https://example.com/"
+  },
+  {
+    "id": 7,
+    "name": "Company G",
+    "website": "https://example.com/"
   }
 ]
