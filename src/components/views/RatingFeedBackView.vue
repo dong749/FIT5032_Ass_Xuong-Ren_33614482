@@ -3,6 +3,7 @@
     <h1>Rating</h1>
     <p>Sum: {{ sum }}</p>
     <p>Count: {{ count }}</p>
+    <p v-if="count > 0">Average: {{ sum / count }}</p>
     <br />
     <form class="w-100" style="max-width: 600px" @submit.prevent="submitRating">
       <div class="row mb-3">
@@ -34,10 +35,11 @@
           class="form-control"
           id="score"
           name="score"
-          min="1"
-          max="10"
+          @blur="validateScore(true)"
+          @input="validateScore(false)"
           v-model="rating.score"
         />
+        <div v-if="errors.score" class="text-danger">{{ errors.score }}</div>
       </div>
       <div class="mb-3">
         <label for="reason" class="form-label">Reason</label>
@@ -45,9 +47,12 @@
           class="form-control"
           id="reason"
           name="reason"
+          @blur="validateReason(true)"
+          @input="validateReason(false)"
           v-model="rating.reason"
           rows="4"
         ></textarea>
+        <div v-if="errors.reason" class="text-danger">{{ errors.reason }}</div>
       </div>
       <button type="submit" class="btn btn-primary w-100">Submit</button>
     </form>
@@ -65,6 +70,35 @@ const rating = ref({
   score: 1,
   reason: ''
 })
+
+const errors = ref({
+  score: null,
+  reason: null
+})
+
+const validateScore = (blur) => {
+  if (rating.value.score < 1) {
+    if (blur) {
+      errors.value.score = 'The min of score should be 1'
+    }
+  } else if (rating.value.score > 10) {
+    if (blur) {
+      errors.value.score = 'The max of score should be 10'
+    }
+  } else {
+    errors.value.score = null
+  }
+}
+
+const validateReason = (blur) => {
+  if (rating.value.reason.length === 0) {
+    if (blur) {
+      errors.value.reason = 'Reason can not be empty'
+    }
+  } else {
+    errors.value.reason = null
+  }
+}
 
 const sum = ref(0)
 const count = ref(0)
@@ -92,23 +126,31 @@ onMounted(() => {
   })
 })
 
+// https://firebase.google.com/docs/firestore/manage-data/add-data?hl=zh-cn
+// https://chatgpt.com/share/cb4da5aa-e52f-409f-a554-233cd57adbaf
 const submitRating = async () => {
-  try {
-    await addDoc(collection(db, 'rating'), {
-      patient: rating.value.patient,
-      volunteer: rating.value.volunteer,
-      score: rating.value.score,
-      reason: rating.value.reason
-    })
+  validateReason(true)
+  validateScore(true)
+  if (!errors.value.score && !errors.value.reason) {
+    try {
+      await addDoc(collection(db, 'rating'), {
+        patient: rating.value.patient,
+        volunteer: rating.value.volunteer,
+        score: rating.value.score,
+        reason: rating.value.reason
+      })
 
-    rating.value = {
-      patient: false,
-      volunteer: false,
-      score: 1,
-      reason: ''
+      rating.value = {
+        patient: false,
+        volunteer: false,
+        score: 1,
+        reason: ''
+      }
+    } catch (e) {
+      console.error('Error adding document: ', e)
     }
-  } catch (e) {
-    console.error('Error adding document: ', e)
+  } else {
+    alert('Input invalid')
   }
 }
 
