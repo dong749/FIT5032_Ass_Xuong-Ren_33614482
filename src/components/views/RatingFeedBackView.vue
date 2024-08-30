@@ -104,6 +104,7 @@ const sum = ref(0)
 const count = ref(0)
 const ratingList = ref([])
 
+// https://chatgpt.com/share/cb4da5aa-e52f-409f-a554-233cd57adbaf
 onMounted(() => {
   const q = collection(db, 'rating')
   onSnapshot(q, (querySnapshot) => {

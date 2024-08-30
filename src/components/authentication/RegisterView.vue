@@ -185,6 +185,7 @@ const finishRegister = async () => {
   }
 }
 
+// https://chatgpt.com/share/12abb89a-afcd-49e7-88cb-fec9623cf516
 const toggleVolunteer = (role) => {
   if (role === 'patient') {
     if (formData.value.isPatient) {

@@ -67,15 +67,19 @@ const routes = [
   }
 ]
 
-const getCurrentUser = () => {
+const getCurrentUser = async () => {
+  const auth = getAuth()
   return new Promise((resolve, reject) => {
-    const removeListener = onAuthStateChanged(
-      getAuth(),
+    const unsubscribe = onAuthStateChanged(
+      auth,
       (user) => {
-        removeListener()
+        unsubscribe()
         resolve(user)
       },
-      reject
+      (error) => {
+        unsubscribe()
+        reject(error)
+      }
     )
   })
 }
@@ -85,13 +89,14 @@ const router = createRouter({
   routes
 })
 
+// https://router.vuejs.org/guide/advanced/navigation-guards.html
 router.beforeEach(async (to, from, next) => {
-  if (to.matched.some((record) => record.meta.isAuth)) {
-    const user = await getCurrentUser()
+  const user = await getCurrentUser()
+  if (to.meta.isAuth) {
     if (user) {
       next()
     } else {
-      alert('This action needs login first')
+      alert('The action need login first')
       next('/authentication/login')
     }
   } else {
