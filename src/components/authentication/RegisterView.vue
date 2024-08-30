@@ -159,6 +159,7 @@ const finishRegister = async () => {
 
   if (!errors.value.username && !errors.value.password && !errors.value.confirmPassword) {
     try {
+      // wait for createUserWithEmailAndPassword and get data
       const userCredential = await createUserWithEmailAndPassword(
         getAuth(),
         formData.value.username,
@@ -168,6 +169,7 @@ const finishRegister = async () => {
       console.log('Register successfully')
       console.log(userCredential)
 
+      // build a new table and add data
       const docRef = await addDoc(collection(db, 'users'), {
         uid: userCredential.user.uid,
         username: formData.value.username,
@@ -184,6 +186,7 @@ const finishRegister = async () => {
   }
 }
 
+// user can not select two roles
 const toggleVolunteer = (role) => {
   if (role === 'patient') {
     if (formData.value.isPatient) {

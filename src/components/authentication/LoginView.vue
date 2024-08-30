@@ -75,6 +75,7 @@ import { useRouter } from 'vue-router'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '@/FirbaseConfig'
 
+// router
 const router = useRouter()
 
 const formData = ref({
@@ -134,9 +135,7 @@ const finishLogin = () => {
       .then((userCredential) => {
         // Signed in
         console.log(formData.value)
-        const user = userCredential.user
         console.log('Login successfully')
-
         router.push('/')
       })
       .catch((error) => {
@@ -155,6 +154,7 @@ const loginWithGoogleAccount = () => {
       const user = result.user
       const userDocRef = doc(db, 'users', user.uid)
       return getDoc(userDocRef).then((userDoc) => {
+        // New sign in user with google account will need to build a new database
         if (!userDoc.exists()) {
           return setDoc(userDocRef, {
             uid: user.uid,
@@ -164,11 +164,13 @@ const loginWithGoogleAccount = () => {
             console.log('User document created')
           })
         } else {
+          // if user is not first time log in with google, it will do not need a new database
           console.log('User document already exists')
         }
       })
     })
     .then(() => {
+      // Nav to home page
       router.push('/')
     })
     .catch((error) => {

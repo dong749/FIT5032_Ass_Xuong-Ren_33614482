@@ -104,6 +104,9 @@ const sum = ref(0)
 const count = ref(0)
 const ratingList = ref([])
 
+// https://vuejs.org/api/composition-api-lifecycle
+// https://blog.csdn.net/RenGJ010617/article/details/139199863
+// https://firebase.google.com/docs/firestore/query-data/listen?hl=zh-cn
 onMounted(() => {
   const q = collection(db, 'rating')
   onSnapshot(q, (querySnapshot) => {
@@ -139,6 +142,7 @@ const submitRating = async () => {
         reason: rating.value.reason
       })
 
+      // clean the data from the form page
       rating.value = {
         patient: false,
         volunteer: false,
@@ -153,6 +157,7 @@ const submitRating = async () => {
   }
 }
 
+// user can not select two roles
 const toggleVolunteer = (role) => {
   if (role === 'patient') {
     if (rating.value.patient) {
