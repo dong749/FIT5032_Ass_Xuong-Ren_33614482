@@ -1,115 +1,106 @@
 <template>
-  <div>
-    <h1>About Page</h1>
+  <h1>Our Workshop Locations</h1>
+  <div class="map-container">
+    <GoogleMap
+      api-key="AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c"
+      style="width: 65%; height: 700px"
+      :center="center"
+      :zoom="10"
+    >
+      <Marker
+        v-for="(location, index) in locations"
+        :key="index"
+        :options="{ position: location.position }"
+        @click="showInforWindow(location)"
+      />
 
-    <DataTable
-      ref="dt_table"
-      :data="filteredTableData"
-      :columns="columns"
-      :options="options"
-      class="table table-striped"
-    />
-
-    <div class="table-filter">
-      <div class="filter-row">
-        <input v-model="filters.id" placeholder="Search by ID" @input="filterTable" />
-      </div>
-      <div class="filter-row">
-        <input v-model="filters.name" placeholder="Search by Name" @input="filterTable" />
-      </div>
-      <div class="filter-row">
-        <input v-model="filters.website" placeholder="Search by Website" @input="filterTable" />
-      </div>
-    </div>
+      <!-- 这里显示 InfoWindow -->
+      <InfoWindow v-if="branchInforSelected" :position="branchInforSelected.position">
+        <div>
+          <h3>{{ branchInforSelected.name }}</h3>
+          <p>Address: {{ branchInforSelected.address }}</p>
+          <p>Contact: {{ branchInforSelected.contact }}</p>
+        </div>
+      </InfoWindow>
+    </GoogleMap>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import DataTable from 'datatables.net-vue3'
-import DataTableCore from 'datatables.net-bs5'
+import { ref } from 'vue'
+import { GoogleMap, Marker, InfoWindow } from 'vue3-google-map'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '@/FirbaseConfig.js'
 
-const datatable = DataTable
-datatable.use(DataTableCore)
+const center = ref({ lat: -37.914021, lng: 145.134734 })
 
-const tableData = [
-  { id: 1, name: 'Company A', website: 'https://example.com/' },
-  { id: 2, name: 'Company B', website: 'https://example.com/' },
-  { id: 3, name: 'Company C', website: 'https://example.com/' },
-  { id: 4, name: 'Company D', website: 'https://example.com/' },
-  { id: 5, name: 'Company E', website: 'https://example.com/' },
-  { id: 6, name: 'Company F', website: 'https://example.com/' },
-  { id: 7, name: 'Company G', website: 'https://example.com/' }
-]
+// 存储多个位置的经纬度
+const locations = ref([])
+const branchInforSelected = ref(null)
 
-const columns = [
-  { title: 'ID', data: 'id' },
-  { title: 'Name', data: 'name' },
-  { title: 'Website', data: 'website' }
-]
+// 获取多个文档并将地址转换为经纬度
+async function loadWorkshopData() {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'WorkPlace'))
+    const locationPromises = []
 
-const options = {
-  paging: true,
-  searching: true,
-  ordering: true,
-  info: true,
-  lengthChange: true,
-  pageLength: 10,
-  lengthMenu: [5, 10, 25, 50, 100],
-  order: [[0, 'asc']],
-  autoWidth: true,
-  responsive: true
+    // 遍历每个文档
+    querySnapshot.forEach((doc) => {
+      const workshopData = doc.data()
+      const branch = {
+        name: workshopData.name,
+        address: workshopData.address,
+        contact: workshopData.contact
+      }
+      // 将地址转换为经纬度并保存
+      locationPromises.push(
+        getCoordinatesFromAddress(branch.address).then((position) => {
+          return { ...branch, position } // 返回包括位置的对象
+        })
+      )
+    })
+
+    // 等待所有地址转换完成并过滤无效位置
+    const positions = await Promise.all(locationPromises)
+    locations.value = positions.filter((position) => position !== null)
+  } catch (error) {
+    console.error('Error fetching documents:', error)
+  }
 }
 
-const filters = ref({ id: '', name: '', website: '' })
+// 调用函数以加载数据
+loadWorkshopData()
 
-const filteredTableData = computed(() => {
-  return tableData.filter((item) => {
-    return (
-      (item.id.toString().includes(filters.value.id) || filters.value.id === '') &&
-      (item.name.toLowerCase().includes(filters.value.name.toLowerCase()) ||
-        filters.value.name === '') &&
-      (item.website.toLowerCase().includes(filters.value.website.toLowerCase()) ||
-        filters.value.website === '')
-    )
-  })
-})
+// 将地址转换为经纬度的函数
+async function getCoordinatesFromAddress(address) {
+  const response = await fetch(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+      address
+    )}&key=AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c`
+  )
+  const data = await response.json()
 
-function filterTable() {
-  filteredTableData.value
+  if (data.status === 'OK') {
+    const location = data.results[0].geometry.location
+    return { lat: location.lat, lng: location.lng }
+  } else {
+    console.error('Geocoding failed:', data.status)
+    return null
+  }
 }
+
+// 显示信息窗口
+const showInforWindow = (location) => {
+  branchInforSelected.value = location // 设置选中的分支
+}
+
+console.log(branchInforSelected)
 </script>
 
 <style scoped>
-.table {
-  width: 100%;
-  margin-top: 20px;
-}
-
-.table-filter {
+.map-container {
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px; /* Add space above the filters */
-  margin-bottom: 20px; /* Add space below the filters */
-}
-
-.filter-row {
-  flex: 1;
-  margin-right: 10px;
-}
-
-.filter-row:last-child {
-  margin-right: 0;
-}
-
-.filter-row input {
-  width: 100%;
-}
-
-/* 添加对齐样式 */
-.table-filter input {
-  text-align: left; /* 输入框文本左对齐 */
-  padding: 8px; /* 输入框内边距 */
-  box-sizing: border-box; /* 确保边框和内边距不会影响输入框宽度 */
+  justify-content: center;
+  height: 100vh;
 }
 </style>
