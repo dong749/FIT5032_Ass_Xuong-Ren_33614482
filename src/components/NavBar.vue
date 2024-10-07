@@ -41,14 +41,19 @@
       </ul>
 
       <div class="col-md-3 text-end">
-        <!-- <button type="button" class="btn btn-outline-primary me-3">Login</button>
-        <button type="button" class="btn btn-outline-primary">Sign-up</button> -->
-        <router-link to="/authentication/login" class="btn btn-outline-primary me-3"
-          >Login</router-link
-        >
-        <router-link to="/authentication/registor" class="btn btn-outline-primary"
-          >Registor</router-link
-        >
+        <template v-if="!isLogin">
+          <router-link to="/authentication/login" class="btn btn-outline-primary me-3"
+            >Login</router-link
+          >
+          <router-link to="/authentication/registor" class="btn btn-outline-primary"
+            >Register</router-link
+          >
+        </template>
+
+        <template v-else>
+          <span class="me-3">{{ userEmail }}</span>
+          <button @click="finishSignOut" class="btn btn-outline-danger">Logout</button>
+        </template>
       </div>
     </header>
   </div>
@@ -88,29 +93,31 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 
-var isLogin = false
+const isLogin = ref(false)
+const userEmail = ref('')
 
-// https://firebase.google.com/docs/reference/js/auth.user
 onAuthStateChanged(getAuth(), (user) => {
   if (user) {
-    // User is signed in, see docs for a list of available properties
-    // ...
-    isLogin = true
+    isLogin.value = true
+    userEmail.value = user.email
   } else {
-    console.log('user has been logged out')
+    isLogin.value = false
+    userEmail.value = ''
   }
 })
 
 const finishSignOut = () => {
-  if (isLogin) {
-    signOut(getAuth())
+  const auth = getAuth()
+  if (isLogin.value) {
+    signOut(auth)
       .then(() => {
-        // Sign-out successful.
+        console.log('User signed out')
       })
       .catch((error) => {
-        console.log(error.message)
+        console.log('Error signing out:', error.message)
       })
   }
 }
