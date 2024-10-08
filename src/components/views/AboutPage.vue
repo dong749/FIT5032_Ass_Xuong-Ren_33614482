@@ -15,9 +15,14 @@
       />
 
       <!-- 这里显示 InfoWindow -->
-      <InfoWindow v-if="branchInforSelected" :position="branchInforSelected.position">
+      <InfoWindow
+        v-if="branchInforSelected"
+        :options="{
+          position: { lat: branchInforSelected.position.lat, lng: branchInforSelected.position.lng }
+        }"
+      >
         <div>
-          <h3>{{ branchInforSelected.name }}</h3>
+          <h3>{{ branchInforSelected.workPlaceName }}</h3>
           <p>Address: {{ branchInforSelected.address }}</p>
           <p>Contact: {{ branchInforSelected.contact }}</p>
         </div>
@@ -48,7 +53,7 @@ async function loadWorkshopData() {
     querySnapshot.forEach((doc) => {
       const workshopData = doc.data()
       const branch = {
-        name: workshopData.name,
+        workPlaceName: workshopData.workPlaceName,
         address: workshopData.address,
         contact: workshopData.contact
       }
@@ -92,9 +97,10 @@ async function getCoordinatesFromAddress(address) {
 // 显示信息窗口
 const showInforWindow = (location) => {
   branchInforSelected.value = location // 设置选中的分支
+  center.value = location.position
+  console.log(branchInforSelected)
+  console.log(branchInforSelected.value.position)
 }
-
-console.log(branchInforSelected)
 </script>
 
 <style scoped>
@@ -102,5 +108,11 @@ console.log(branchInforSelected)
   display: flex;
   justify-content: center;
   height: 100vh;
+}
+
+.gm-style-iw {
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 9999; /* 确保 InfoWindow 在其他元素之上 */
 }
 </style>
