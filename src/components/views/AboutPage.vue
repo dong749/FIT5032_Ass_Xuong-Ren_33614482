@@ -169,22 +169,22 @@ const navgation = () => {
 }
 
 // 自动补全功能
-onMounted(() => {
-  const input = document.getElementById('startPoint')
+onMounted(async () => {
+  await loadWorkshopData() // 加载数据
 
-  autocomplete.value = new google.maps.places.Autocomplete(input, {
-    types: ['geocode'], // 只返回地址
-    componentRestrictions: { country: 'au' } // 限制为澳大利亚
-  })
-
+  // 确保 google 对象已加载
+  autocomplete.value = await new google.maps.places.Autocomplete(
+    document.getElementById('startPoint'),
+    { componentRestrictions: { country: 'au' } }
+  )
   autocomplete.value.addListener('place_changed', () => {
     const place = autocomplete.value.getPlace()
     if (place.geometry) {
       startPoint.value = place.formatted_address // 设置输入框为完整地址
+      center.value = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } // 更新地图中心
     }
   })
 })
-
 // 加载数据
 loadWorkshopData()
 </script>
