@@ -1,71 +1,113 @@
 <template>
-  <h1>Our Workshop Locations</h1>
-  <div class="map-container">
-    <GoogleMap
-      api-key="AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c"
-      style="width: 65%; height: 700px"
-      :center="center"
-      :zoom="10"
-    >
-      <Marker
-        v-for="(location, index) in locations"
-        :key="index"
-        :options="{ position: location.position }"
-        @click="showInforWindow(location)"
-      />
-
-      <!-- 这里显示 InfoWindow -->
-      <InfoWindow
-        v-if="branchInforSelected"
-        :options="{
-          position: { lat: branchInforSelected.position.lat, lng: branchInforSelected.position.lng }
-        }"
+  <div class="container">
+    <h1>Our Workshop Locations</h1>
+    <div>
+      <GoogleMap
+        ref="mapRef"
+        api-key="AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c"
+        style="width: 100%; height: 700px"
+        :center="center"
+        :zoom="10"
       >
-        <div>
-          <h3>{{ branchInforSelected.workPlaceName }}</h3>
-          <p>Address: {{ branchInforSelected.address }}</p>
-          <p>Contact: {{ branchInforSelected.contact }}</p>
-        </div>
-      </InfoWindow>
-    </GoogleMap>
+        <Marker
+          v-for="(location, index) in locations"
+          :key="index"
+          :options="{ position: location.position }"
+          @click="showInforWindow(location)"
+        />
+
+        <InfoWindow
+          v-if="branchInforSelected"
+          :options="{
+            position: {
+              lat: branchInforSelected.position.lat,
+              lng: branchInforSelected.position.lng
+            }
+          }"
+        >
+          <div>
+            <h3>{{ branchInforSelected.workPlaceName }}</h3>
+            <p>Address: {{ branchInforSelected.address }}</p>
+            <p>Contact: {{ branchInforSelected.contact }}</p>
+          </div>
+        </InfoWindow>
+      </GoogleMap>
+    </div>
+    <hr />
+    <h3>How to find us</h3>
+    <form @submit.prevent="navgation">
+      <div class="form-group mt-4">
+        <label for="startPoint" class="form-label">Start Position</label>
+        <input
+          type="text"
+          id="startPoint"
+          class="from-group mt-2"
+          v-model="startPoint"
+          placeholder="Enter your current position"
+          ref="autocompleteInput"
+          required
+        />
+      </div>
+      <div class="form-group mt-4">
+        <label for="endPoint" class="form-label">End Position</label>
+        <select v-model="branchInforSelectedId" class="form-control mt-2" required>
+          <option v-for="location in locations" :key="location.id" :value="location.id">
+            {{ location.workPlaceName }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group mt-4">
+        <label for="transportationType" class="form-label">Transportation</label>
+        <select v-model="transportationType" class="form-control mt-2" required>
+          <option v-for="type in types" :key="type" :value="type">{{ type }}</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary brn-block mt-4">Navigation</button>
+    </form>
+    <hr />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { GoogleMap, Marker, InfoWindow } from 'vue3-google-map'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/FirbaseConfig.js'
 
 const center = ref({ lat: -37.914021, lng: 145.134734 })
-
-// 存储多个位置的经纬度
 const locations = ref([])
 const branchInforSelected = ref(null)
+const startPoint = ref('')
+const transportationType = ref('')
+const branchInforSelectedId = ref('')
+const mapRef = ref(null)
+const routeDetails = ref(null)
+const types = ['DRIVING', 'TRANSIT', 'WALKING', 'BICYCLING']
 
-// 获取多个文档并将地址转换为经纬度
+// 自动补全的引用
+const autocomplete = ref(null)
+
+// 加载车间数据
 async function loadWorkshopData() {
   try {
     const querySnapshot = await getDocs(collection(db, 'WorkPlace'))
     const locationPromises = []
 
-    // 遍历每个文档
     querySnapshot.forEach((doc) => {
       const workshopData = doc.data()
       const branch = {
+        id: doc.id,
         workPlaceName: workshopData.workPlaceName,
         address: workshopData.address,
         contact: workshopData.contact
       }
-      // 将地址转换为经纬度并保存
       locationPromises.push(
         getCoordinatesFromAddress(branch.address).then((position) => {
-          return { ...branch, position } // 返回包括位置的对象
+          return { ...branch, position }
         })
       )
     })
 
-    // 等待所有地址转换完成并过滤无效位置
     const positions = await Promise.all(locationPromises)
     locations.value = positions.filter((position) => position !== null)
   } catch (error) {
@@ -73,15 +115,10 @@ async function loadWorkshopData() {
   }
 }
 
-// 调用函数以加载数据
-loadWorkshopData()
-
-// 将地址转换为经纬度的函数
+// 获取坐标
 async function getCoordinatesFromAddress(address) {
   const response = await fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-      address
-    )}&key=AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c`
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c`
   )
   const data = await response.json()
 
@@ -96,23 +133,60 @@ async function getCoordinatesFromAddress(address) {
 
 // 显示信息窗口
 const showInforWindow = (location) => {
-  branchInforSelected.value = location // 设置选中的分支
+  branchInforSelected.value = location
   center.value = location.position
-  console.log(branchInforSelected)
-  console.log(branchInforSelected.value.position)
 }
+
+// 导航功能
+const navgation = () => {
+  const selectedBranch = locations.value.find(
+    (location) => location.id === branchInforSelectedId.value
+  )
+  if (!startPoint.value || !selectedBranch || !transportationType.value) {
+    alert('Lack of information, cannot start navigation')
+    return
+  }
+
+  const directionsService = new google.maps.DirectionsService()
+  const directionsRenderer = new google.maps.DirectionsRenderer()
+
+  directionsRenderer.setMap(mapRef.value.map)
+
+  const travel = {
+    origin: startPoint.value,
+    destination: selectedBranch.address,
+    travelMode: google.maps.TravelMode[transportationType.value]
+  }
+
+  directionsService.route(travel, (result, status) => {
+    if (status === 'OK') {
+      directionsRenderer.setDirections(result)
+      routeDetails.value = result.routes[0].legs[0]
+    } else {
+      alert('Error message: ' + status)
+    }
+  })
+}
+
+// 自动补全功能
+onMounted(() => {
+  const input = document.getElementById('startPoint')
+
+  autocomplete.value = new google.maps.places.Autocomplete(input, {
+    types: ['geocode'], // 只返回地址
+    componentRestrictions: { country: 'au' } // 限制为澳大利亚
+  })
+
+  autocomplete.value.addListener('place_changed', () => {
+    const place = autocomplete.value.getPlace()
+    if (place.geometry) {
+      startPoint.value = place.formatted_address // 设置输入框为完整地址
+    }
+  })
+})
+
+// 加载数据
+loadWorkshopData()
 </script>
 
-<style scoped>
-.map-container {
-  display: flex;
-  justify-content: center;
-  height: 100vh;
-}
-
-.gm-style-iw {
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 9999; /* 确保 InfoWindow 在其他元素之上 */
-}
-</style>
+<style scoped></style>
