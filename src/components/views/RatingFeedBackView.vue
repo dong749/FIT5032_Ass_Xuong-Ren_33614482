@@ -60,9 +60,12 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { onSnapshot, collection, addDoc } from 'firebase/firestore'
-import { db } from '@/FirbaseConfig'
+import { ref, computed, onMounted } from 'vue'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '@/FirbaseConfig.js'
+
+// Firestore 初始化
+const ratingsCollection = collection(db, 'rating') // 替换为你的集合名称
 
 const rating = ref({
   patient: false,
@@ -74,6 +77,27 @@ const rating = ref({
 const errors = ref({
   score: null,
   reason: null
+})
+
+// 统计评分总和和计数
+const ratingsList = ref([]) // 用于存储评分数据
+
+// 计算总和和计数
+const sum = computed(() => ratingsList.value.reduce((acc, curr) => acc + curr.score, 0))
+const count = computed(() => ratingsList.value.length)
+
+// 获取评分数据
+const fetchRatings = async () => {
+  try {
+    const snapshot = await getDocs(ratingsCollection)
+    ratingsList.value = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) // 根据实际数据结构调整
+  } catch (error) {
+    console.error('Getting rating data error:', error)
+  }
+}
+
+onMounted(() => {
+  fetchRatings() // 在组件挂载时获取数据
 })
 
 const validateScore = (blur) => {
@@ -100,64 +124,49 @@ const validateReason = (blur) => {
   }
 }
 
-const sum = ref(0)
-const count = ref(0)
-const ratingList = ref([])
-
-// https://vuejs.org/api/composition-api-lifecycle
-// https://blog.csdn.net/RenGJ010617/article/details/139199863
-// https://firebase.google.com/docs/firestore/query-data/listen?hl=zh-cn
-onMounted(() => {
-  const q = collection(db, 'rating')
-  onSnapshot(q, (querySnapshot) => {
-    let tempRatings = []
-    let totalScore = 0
-    querySnapshot.forEach((doc) => {
-      const rating = {
-        id: doc.id,
-        patient: doc.data().patient,
-        volunteer: doc.data().volunteer,
-        score: doc.data().score,
-        reason: doc.data().reason
-      }
-      tempRatings.push(rating)
-      totalScore += doc.data().score
-    })
-    ratingList.value = tempRatings
-    sum.value = totalScore
-    count.value = tempRatings.length
-  })
-})
-
-// https://firebase.google.com/docs/firestore/manage-data/add-data?hl=zh-cn
 const submitRating = async () => {
   validateReason(true)
   validateScore(true)
   if (!errors.value.score && !errors.value.reason) {
     try {
-      await addDoc(collection(db, 'rating'), {
-        patient: rating.value.patient,
-        volunteer: rating.value.volunteer,
-        score: rating.value.score,
-        reason: rating.value.reason
-      })
+      const response = await fetch(
+        'https://us-central1-mentalhealthy-a5f2f.cloudfunctions.net/submitRating',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(rating.value)
+        }
+      )
 
-      // clean the data from the form page
-      rating.value = {
-        patient: false,
-        volunteer: false,
-        score: 1,
-        reason: ''
+      const data = await response.json()
+
+      if (response.ok) {
+        alert(data.message)
+        // 将新评分添加到评分列表
+        ratingsList.value.push({ score: rating.value.score }) // 如果有更多数据，可以在这里添加更多字段
+
+        // 清空表单
+        rating.value = {
+          patient: false,
+          volunteer: false,
+          score: 1,
+          reason: ''
+        }
+      } else {
+        console.error('Error:', data.error)
+        alert('Rating error')
       }
     } catch (e) {
-      console.error('Error adding document: ', e)
+      console.error('Rating error:', e)
+      alert('Rating error')
     }
   } else {
     alert('Input invalid')
   }
 }
 
-// user can not select two roles
 const toggleVolunteer = (role) => {
   if (role === 'patient') {
     if (rating.value.patient) {
