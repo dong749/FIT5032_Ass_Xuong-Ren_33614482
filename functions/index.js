@@ -7,35 +7,51 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const functions = require('firebase-functions')
+const { onRequest } = require('firebase-functions/v2/https')
 const admin = require('firebase-admin')
-const cors = require('cors')({ origin: true }) // 引入 cors 并允许所有来源
+const cors = require('cors')({ origin: true })
+
 admin.initializeApp()
 const db = admin.firestore()
 
-exports.submitRating = functions.https.onRequest((req, res) => {
+exports.caculateRating = onRequest((req, res) => {
   cors(req, res, async () => {
-    if (req.method !== 'POST') {
-      return res.status(405).send('Method Not Allowed')
-    }
-
-    const { patient, volunteer, score, reason } = req.body
-
-    if (score < 1 || score > 10 || !reason || reason.length === 0) {
-      return res.status(400).json({ error: 'Invalid input' })
-    }
-
     try {
-      await db.collection('rating').add({
-        patient: patient || false,
-        volunteer: volunteer || false,
+      const ratingCollection = admin.firestore().collection('rating')
+      const snapshot = await ratingCollection.get()
+      const count = snapshot.size
+      let totalScore = 0
+      snapshot.forEach((doc) => {
+        const ratingData = doc.data()
+        totalScore += ratingData.score
+      })
+      const sum = totalScore
+      res.status(200).json({
+        count: count,
+        sum: sum
+      })
+    } catch (error) {
+      console.error('Error calculate rating count and score sum', error.message)
+      res.status(500).send('Error calculate rating count and score sum')
+    }
+  })
+})
+
+exports.submitRating = onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      const { score, reason, patient, volunteer } = req.body
+      const ratingCollection = admin.firestore().collection('rating')
+      await ratingCollection.add({
+        patient: patient,
+        volunteer: volunteer,
         score: score,
         reason: reason
       })
-      return res.status(200).json({ message: 'Rating submitted successfully' })
+      res.status(200).send('Rating add succefully')
     } catch (error) {
-      console.error('Error adding document: ', error)
-      return res.status(500).json({ error: 'Failed to add rating' })
+      console.error('Rating can not add and caiculate')
+      res.status(500).send('Rating can not add and caiculate')
     }
   })
 })
