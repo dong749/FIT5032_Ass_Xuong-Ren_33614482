@@ -1,16 +1,12 @@
 import express from 'express'
-import cors from 'cors' // 引入 cors 中间件
-import { sendWelcomeEmail } from './Email.js' // 确保使用.js扩展名
+import cors from 'cors'
+import { sendWelcomeEmail } from './Email.js'
 
 const app = express()
-
-// 启用 CORS 以允许跨域请求
 app.use(cors())
 
-// 允许解析 JSON 请求体
 app.use(express.json())
 
-// 邮件发送路由
 app.post('/send-email', (req, res) => {
   const { email } = req.body
 
@@ -23,8 +19,7 @@ app.post('/send-email', (req, res) => {
   })
 })
 
-// 启动服务器
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
+  console.log(`Port: ${PORT}`)
 })

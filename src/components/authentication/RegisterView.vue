@@ -180,6 +180,7 @@ const finishRegister = async () => {
       console.log('Document written with ID: ', docRef.id)
       router.push('/')
       await sendWelcomeEmail(userCredential.user.email)
+      alert('Welcome to our community')
     } catch (error) {
       console.error('Error during registration: ', error.message)
       alert(error.message)
