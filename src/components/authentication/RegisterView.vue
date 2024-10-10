@@ -179,6 +179,7 @@ const finishRegister = async () => {
       })
       console.log('Document written with ID: ', docRef.id)
       router.push('/')
+      await sendWelcomeEmail(userCredential.user.email)
     } catch (error) {
       console.error('Error during registration: ', error.message)
       alert(error.message)
@@ -196,6 +197,22 @@ const toggleVolunteer = (role) => {
     if (formData.value.isVolunteer) {
       formData.value.isPatient = false
     }
+  }
+}
+
+const sendWelcomeEmail = async (email) => {
+  try {
+    const response = await fetch('http://localhost:3000/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email })
+    })
+    const result = await response.text()
+    console.log('Email Api response:', result)
+  } catch (error) {
+    console.error('Error message:', error)
   }
 }
 </script>
