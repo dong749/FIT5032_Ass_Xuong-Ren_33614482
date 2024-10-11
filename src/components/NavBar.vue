@@ -43,6 +43,11 @@
             >Rating Statistics</router-link
           >
         </li>
+        <li class="nav-item">
+          <router-link to="/views/AdminDashboardView" class="nav-link" active-class="active"
+            >Admin Data</router-link
+          >
+        </li>
       </ul>
 
       <div class="col-md-3 text-end">

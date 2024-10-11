@@ -3,6 +3,7 @@ import PasswordResetView from '@/components/authentication/PasswordResetView.vue
 import RegisterView from '@/components/authentication/RegisterView.vue'
 import HomePageView from '@/components/HomePageView.vue'
 import AboutPage from '@/components/views/AboutPage.vue'
+import AdminDashboardView from '@/components/views/AdminDashboardView.vue'
 import HelpPostView from '@/components/views/HelpPostView.vue'
 import InteractiveChartsForRatingView from '@/components/views/InteractiveChartsForRatingView.vue'
 import JoinUsView from '@/components/views/JoinUsView.vue'
@@ -11,6 +12,8 @@ import RatingFeedBackView from '@/components/views/RatingFeedBackView.vue'
 import SponsorsPage from '@/components/views/SponsorsPage.vue'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { createRouter, createWebHistory } from 'vue-router'
+import { collection, doc, getDoc } from 'firebase/firestore'
+import { db } from '@/FirbaseConfig.js'
 
 const routes = [
   {
@@ -70,6 +73,15 @@ const routes = [
     path: '/views/InteractiveChartsForRating',
     name: 'InteractiveChartsForRating',
     component: InteractiveChartsForRatingView
+  },
+  {
+    path: '/views/AdminDashboardView',
+    name: 'AdminDashboardView',
+    component: AdminDashboardView,
+    meta: {
+      isAuth: true,
+      isAdmin: true
+    }
   }
 ]
 
@@ -101,14 +113,28 @@ const router = createRouter({
   routes
 })
 
+const getUserRole = async (uid) => {
+  if (uid === '2JUvF7Y0TUgWSAHjr4upxtxIgR13') {
+    return 'admin'
+  }
+}
+
 // https://router.vuejs.org/guide/advanced/navigation-guards.html
 router.beforeEach(async (to, from, next) => {
   const user = await getCurrentUser()
+  console.log(user)
   if (to.meta.isAuth) {
     if (user) {
-      next()
+      const userRole = await getUserRole(user.uid)
+      console.log(userRole)
+      if (to.meta.isAdmin && userRole !== 'admin') {
+        alert('Access denied')
+        next('/')
+      } else {
+        next()
+      }
     } else {
-      alert('The action need login first')
+      alert('The action needs login first')
       next('/authentication/login')
     }
   } else {
