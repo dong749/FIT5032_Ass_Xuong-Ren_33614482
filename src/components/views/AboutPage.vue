@@ -86,6 +86,8 @@ const types = ['DRIVING', 'TRANSIT', 'WALKING', 'BICYCLING']
 
 const autocomplete = ref(null)
 
+let directionsRenderer = null
+
 async function loadWorkshopData() {
   try {
     const querySnapshot = await getDocs(collection(db, 'WorkPlace'))
@@ -143,9 +145,13 @@ const navgation = () => {
   }
 
   const directionsService = new google.maps.DirectionsService()
-  const directionsRenderer = new google.maps.DirectionsRenderer()
 
-  directionsRenderer.setMap(mapRef.value.map)
+  if (!directionsRenderer) {
+    directionsRenderer = new google.maps.DirectionsRenderer()
+    directionsRenderer.setMap(mapRef.value.map)
+  } else {
+    directionsRenderer.set('directions', null)
+  }
 
   const travel = {
     origin: startPoint.value,
