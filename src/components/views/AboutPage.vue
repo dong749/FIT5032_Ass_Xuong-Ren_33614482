@@ -37,11 +37,11 @@
     <h3>How to find us</h3>
     <form @submit.prevent="navgation">
       <div class="form-group mt-4">
-        <label for="startPoint" class="form-label">Start Position</label>
+        <label for="startPoint">Start Position</label>
         <input
           type="text"
           id="startPoint"
-          class="from-group mt-2"
+          class="form-group mt-2"
           v-model="startPoint"
           placeholder="Enter your current position"
           ref="autocompleteInput"
@@ -49,7 +49,7 @@
         />
       </div>
       <div class="form-group mt-4">
-        <label for="endPoint" class="form-label">End Position</label>
+        <label for="endPoint">End Position</label>
         <select v-model="branchInforSelectedId" class="form-control mt-2" required>
           <option v-for="location in locations" :key="location.id" :value="location.id">
             {{ location.workPlaceName }}

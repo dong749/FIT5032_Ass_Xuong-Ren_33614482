@@ -36,13 +36,17 @@ const datatable = DataTable
 datatable.use(DataTableCore)
 
 const tableData = [
-  { id: 1, name: 'Company A', website: 'https://example.com/' },
-  { id: 2, name: 'Company B', website: 'https://example.com/' },
-  { id: 3, name: 'Company C', website: 'https://example.com/' },
-  { id: 4, name: 'Company D', website: 'https://example.com/' },
-  { id: 5, name: 'Company E', website: 'https://example.com/' },
-  { id: 6, name: 'Company F', website: 'https://example.com/' },
-  { id: 7, name: 'Company G', website: 'https://example.com/' }
+  { id: 1, name: 'Help Post A', website: 'https://example.com/' },
+  { id: 2, name: 'Help Post B', website: 'https://example.com/' },
+  { id: 3, name: 'Help Post C', website: 'https://example.com/' },
+  { id: 4, name: 'Help Post D', website: 'https://example.com/' },
+  { id: 5, name: 'Help Post E', website: 'https://example.com/' },
+  { id: 6, name: 'Help Post F', website: 'https://example.com/' },
+  { id: 7, name: 'Help Post G', website: 'https://example.com/' },
+  { id: 8, name: 'Help Post H', website: 'https://example.com/' },
+  { id: 9, name: 'Help Post I', website: 'https://example.com/' },
+  { id: 10, name: 'Help Post J', website: 'https://example.com/' },
+  { id: 11, name: 'Help Post K', website: 'https://example.com/' }
 ]
 
 const columns = [
@@ -92,8 +96,8 @@ function filterTable() {
 .table-filter {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px; /* Add space above the filters */
-  margin-bottom: 20px; /* Add space below the filters */
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
 
 .filter-row {
@@ -109,10 +113,9 @@ function filterTable() {
   width: 100%;
 }
 
-/* 添加对齐样式 */
 .table-filter input {
-  text-align: left; /* 输入框文本左对齐 */
-  padding: 8px; /* 输入框内边距 */
-  box-sizing: border-box; /* 确保边框和内边距不会影响输入框宽度 */
+  text-align: left;
+  padding: 8px;
+  box-sizing: border-box;
 }
 </style>

@@ -8,7 +8,13 @@
         </a>
       </li>
     </ul>
-    <button @click="exportCSV">Export as a .csv file</button>
+    <div>
+      <button @click="exportCSV">Export as a .csv file</button>
+    </div>
+    <br />
+    <div>
+      <button @click="exportPDF">Export as a .pdf file</button>
+    </div>
   </div>
 </template>
 
@@ -16,6 +22,7 @@
 import { ref } from 'vue'
 import json from '../Json/Json.json'
 import Papa from 'papaparse'
+import { jsPDF } from 'jspdf'
 
 const sponsors = ref(json)
 
@@ -34,6 +41,24 @@ const exportCSV = () => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+const exportPDF = () => {
+  const file = new jsPDF()
+
+  file.text('Sponsors List', 10, 10)
+
+  let startY = 20
+  file.text('Name', 10, startY)
+  file.text('Website', 100, startY)
+
+  sponsors.value.forEach((sponsor, index) => {
+    const rowY = startY + (index + 1) * 10
+    file.text(sponsor.name, 10, rowY)
+    file.text(sponsor.website, 100, rowY)
+  })
+
+  file.save('sponsors_list.pdf')
 }
 </script>
 
