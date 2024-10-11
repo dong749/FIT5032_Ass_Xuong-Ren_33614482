@@ -4,6 +4,7 @@ import RegisterView from '@/components/authentication/RegisterView.vue'
 import HomePageView from '@/components/HomePageView.vue'
 import AboutPage from '@/components/views/AboutPage.vue'
 import HelpPostView from '@/components/views/HelpPostView.vue'
+import InteractiveChartsForRatingView from '@/components/views/InteractiveChartsForRatingView.vue'
 import JoinUsView from '@/components/views/JoinUsView.vue'
 import LearningFormView from '@/components/views/LearningFormView.vue'
 import RatingFeedBackView from '@/components/views/RatingFeedBackView.vue'
@@ -64,6 +65,11 @@ const routes = [
     meta: {
       isAuth: true
     }
+  },
+  {
+    path: '/views/InteractiveChartsForRating',
+    name: 'InteractiveChartsForRating',
+    component: InteractiveChartsForRatingView
   }
 ]
 

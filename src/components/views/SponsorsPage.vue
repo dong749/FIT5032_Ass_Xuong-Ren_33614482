@@ -45,19 +45,15 @@ const exportCSV = () => {
 
 const exportPDF = () => {
   const file = new jsPDF()
-
   file.text('Sponsors List', 10, 10)
-
   let startY = 20
   file.text('Name', 10, startY)
   file.text('Website', 100, startY)
-
   sponsors.value.forEach((sponsor, index) => {
     const rowY = startY + (index + 1) * 10
     file.text(sponsor.name, 10, rowY)
     file.text(sponsor.website, 100, rowY)
   })
-
   file.save('sponsors_list.pdf')
 }
 </script>

@@ -38,6 +38,11 @@
             >Rating</router-link
           >
         </li>
+        <li class="nav-item">
+          <router-link to="/views/InteractiveChartsForRating" class="nav-link" active-class="active"
+            >Rating Statistics</router-link
+          >
+        </li>
       </ul>
 
       <div class="col-md-3 text-end">
