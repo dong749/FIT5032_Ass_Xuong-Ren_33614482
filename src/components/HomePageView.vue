@@ -47,7 +47,7 @@
         <img
           src="https://images.unsplash.com/photo-1583609042814-8a30efe7a9d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8M3wzMTczNjExfHxlbnwwfHx8fHw%3D"
           class="d-block w-100"
-          alt="First slide"
+          alt="Second slide"
         />
         <div class="container">
           <div class="carousel-caption">
@@ -67,7 +67,7 @@
         <img
           src="https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8MXwzNDkzMTYzfHxlbnwwfHx8fHw%3D"
           class="d-block w-100"
-          alt="First slide"
+          alt="Third slide"
         />
         <div class="container">
           <div class="carousel-caption text-end">

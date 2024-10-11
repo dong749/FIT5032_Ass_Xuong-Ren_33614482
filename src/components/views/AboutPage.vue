@@ -84,10 +84,8 @@ const mapRef = ref(null)
 const routeDetails = ref(null)
 const types = ['DRIVING', 'TRANSIT', 'WALKING', 'BICYCLING']
 
-// 自动补全的引用
 const autocomplete = ref(null)
 
-// 加载车间数据
 async function loadWorkshopData() {
   try {
     const querySnapshot = await getDocs(collection(db, 'WorkPlace'))
@@ -115,7 +113,6 @@ async function loadWorkshopData() {
   }
 }
 
-// 获取坐标
 async function getCoordinatesFromAddress(address) {
   const response = await fetch(
     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyBJl9e3iuNT08eFjSx5CHrFc9KQgznnr2c`
@@ -131,13 +128,11 @@ async function getCoordinatesFromAddress(address) {
   }
 }
 
-// 显示信息窗口
 const showInforWindow = (location) => {
   branchInforSelected.value = location
   center.value = location.position
 }
 
-// 导航功能
 const navgation = () => {
   const selectedBranch = locations.value.find(
     (location) => location.id === branchInforSelectedId.value
@@ -168,11 +163,9 @@ const navgation = () => {
   })
 }
 
-// 自动补全功能
 onMounted(async () => {
-  await loadWorkshopData() // 加载数据
+  await loadWorkshopData()
 
-  // 确保 google 对象已加载
   autocomplete.value = await new google.maps.places.Autocomplete(
     document.getElementById('startPoint'),
     { componentRestrictions: { country: 'au' } }
@@ -180,12 +173,12 @@ onMounted(async () => {
   autocomplete.value.addListener('place_changed', () => {
     const place = autocomplete.value.getPlace()
     if (place.geometry) {
-      startPoint.value = place.formatted_address // 设置输入框为完整地址
-      center.value = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } // 更新地图中心
+      startPoint.value = place.formatted_address
+      center.value = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
     }
   })
 })
-// 加载数据
+
 loadWorkshopData()
 </script>
 
